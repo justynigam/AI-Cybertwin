@@ -44,8 +44,8 @@ services:
     env: python
     region: ohio
     plan: starter
-    buildCommand: "cd behavior_engine && pip install -r ../ml/requirements-ml.txt --extra-index-url https://download.pytorch.org/whl/cpu"
-    startCommand: "cd behavior_engine && python consumer.py"
+    buildCommand: "pip install -r backend/requirements.txt"
+    startCommand: "python -m behavior_twin.twin_consumer"
     envVars:
       - key: REDIS_URL
         fromService:
