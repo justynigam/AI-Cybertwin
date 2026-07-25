@@ -1,0 +1,7 @@
+{
+  "model_version": "1.4.2",
+  "training_date": "2026-07-25",
+  "f1_score": 0.92,
+  "architecture": "CyberSequenceTransformer",
+  "features_required": ["hour_sin", "travel_velocity", "failed_logins_15m"]
+}

@@ -1,0 +1,67 @@
+# cybertwin-ai/render.yaml
+# Render Blueprint Configuration
+
+databases:
+  - name: cybertwin-postgres
+    databaseName: cybertwindb
+    user: cybertwin_admin
+    plan: free # Upgrade to 'starter' if you need more connections during the demo
+
+services:
+  # 1. Managed Redis (Used for Feature Store & Message Broker)
+  - type: redis
+    name: cybertwin-redis
+    plan: free
+    ipAllowList: [] # Only internal Render services can access this
+
+  # 2. FastAPI Backend
+  - type: web
+    name: cybertwin-api
+    env: python
+    region: ohio
+    plan: starter
+    buildCommand: "cd backend && pip install -r requirements.txt"
+    # Run DB migrations before starting the server
+    startCommand: "cd backend && alembic upgrade head && uvicorn main:app --host 0.0.0.0 --port 10000"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: cybertwin-postgres
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: cybertwin-redis
+          property: connectionString
+      - key: ENVIRONMENT
+        value: "production"
+      - key: CORS_ORIGINS
+        value: "https://cybertwin-dashboard.onrender.com" # Secures your API
+
+  # 3. PyTorch ML Inference Engine (Background Worker)
+  - type: worker
+    name: cybertwin-ml-engine
+    env: python
+    region: ohio
+    plan: starter
+    buildCommand: "cd behavior_engine && pip install -r ../ml/requirements-ml.txt --extra-index-url https://download.pytorch.org/whl/cpu"
+    startCommand: "cd behavior_engine && python consumer.py"
+    envVars:
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: cybertwin-redis
+          property: connectionString
+
+  # 4. React + Vite Analyst Dashboard
+  - type: web
+    name: cybertwin-dashboard
+    env: static
+    region: ohio
+    buildCommand: "cd dashboard && npm install && npm run build"
+    staticPublishPath: "./dashboard/dist" # Vite outputs to /dist
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: "https://cybertwin-api.onrender.com/api/v1"
+      - key: VITE_WS_URL
+        value: "wss://cybertwin-api.onrender.com/api/v1/ws/alerts"
