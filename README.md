@@ -9,6 +9,12 @@
 
 ---
 
+## 📸 CyberTwin SOC Analyst Dashboard & Ingest Simulator
+
+![CyberTwin AI Live Dashboard & Ingest Simulator](docs/images/dashboard_preview.png)
+
+---
+
 ## 📌 Project Overview
 
 - **Problem Statement ID**: PS-CYBER-01
